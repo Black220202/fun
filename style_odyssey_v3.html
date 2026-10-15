@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STYLE ODYSSEY // An Interactive Scroll Journey Through 8 Design Eras</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,700&family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&family=VT323&display=swap" rel="stylesheet">
+  <!-- Lenis = weighty smooth scrolling. The page still works without it. -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <style>
+    :root {
+      --active-accent: #FF3300;
+      --stage-bg: #F8F8F6;
+      --stage-text: #111111;
+    }
+    * { box-sizing: border-box; }
+
+    /* Lenis recommended CSS */
+    html.lenis, html.lenis body { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
+    .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+    .lenis.lenis-stopped { overflow: hidden; }
+
+    body {
+      margin: 0; padding: 0; overflow-x: hidden;
+      background-color: var(--stage-bg);
+      color: var(--stage-text);
+      font-family: 'Inter', sans-serif;
+      transition: background-color 550ms cubic-bezier(0.22, 1, 0.36, 1), color 450ms ease;
+    }
+
+    .font-swiss { font-family: 'Inter', -apple-system, sans-serif; }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+    .font-brutal { font-family: 'Space Grotesk', sans-serif; }
+    .font-maximal { font-family: 'Syne', sans-serif; }
+    .font-serif-max { font-family: 'Fraunces', serif; }
+    .font-y2k { font-family: 'VT323', monospace; }
+    .font-cyber { font-family: 'Orbitron', sans-serif; }
+
+    /* =========================================================================
+       SHARED: SECTION SHELL, GHOST NUMBERS, SHAPED DIVIDERS, REVEALS
+    ========================================================================== */
+    section[data-stage] { position: relative; overflow: hidden; }
+    .stage-inner { position: relative; z-index: 10; will-change: transform; }
+
+    .ghost-num {
+      position: absolute; z-index: 1; pointer-events: none; user-select: none;
+      font-family: 'Inter', sans-serif; font-weight: 900; line-height: .8; letter-spacing: -0.05em;
+      font-size: clamp(12rem, 34vw, 32rem);
+      color: transparent; -webkit-text-stroke: 2px var(--stroke, #000); opacity: .14;
+      will-change: transform;
+    }
+
+    .edge {
+      position: absolute; top: -1px; left: 0; width: 100%;
+      height: clamp(48px, 7vw, 84px); z-index: 6; pointer-events: none; display: block;
+    }
+
+    .rv-pre { opacity: 0; }
+
+    /* =========================================================================
+       WARP TRANSITION OVERLAY (plays between eras)
+    ========================================================================== */
+    #warp {
+      position: fixed; inset: 0; z-index: 45; pointer-events: none;
+      visibility: hidden; clip-path: inset(0 0 100% 0);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+      will-change: clip-path;
+    }
+    #warp.intro { visibility: visible; clip-path: inset(0); animation: introSafety .01s 5s forwards; }
+    #warp::after {
+      content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .2s;
+      background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.3) 3px 4px);
+    }
+    #warp[data-scan="on"]::after { opacity: .55; }
+    #warpInner { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: 1rem; position: relative; z-index: 2; }
+    #warpNum { font-size: clamp(7rem, 26vw, 22rem); line-height: .8; font-weight: 900; letter-spacing: -.04em; }
+    #warpName { font-size: clamp(1.2rem, 3.6vw, 3rem); font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
+    #warpTag { font-family: 'JetBrains Mono', monospace; font-size: .8rem; letter-spacing: .3em; opacity: .8; text-transform: uppercase; }
+
+
+    #scrollHint {
+      position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 40;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+      color: #111; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      transition: opacity .5s; pointer-events: none;
+    }
+    #scrollHint i { font-style: normal; animation: bob 1.4s ease-in-out infinite; }
+
+    /* =========================================================================
+       STAGE 1: SWISS / MINIMALISM
+    ========================================================================== */
+    .swiss-word {
+      display: inline-block; opacity: 0.12; transform: translateY(10px);
+      transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1), transform 420ms cubic-bezier(0.16, 1, 0.3, 1), color 300ms ease;
+    }
+    .swiss-word.revealed { opacity: 1; transform: translateY(0); }
+    .swiss-grid {
+      background-image: linear-gradient(to right, rgba(0,0,0,.055) 1px, transparent 1px);
+      background-size: calc(100% / 12) 100%;
+    }
+    .swiss-marquee { animation: marquee 34s linear infinite; }
+
+    /* =========================================================================
+       STAGE 2: GLASSMORPHISM
+    ========================================================================== */
+    @keyframes float-orb {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(35px, -25px) scale(1.08); }
+    }
+    .glass-orb-1 { animation: float-orb 9s infinite ease-in-out; }
+    .glass-orb-2 { animation: float-orb 12s infinite ease-in-out reverse; }
+    .glass-orb-3 { animation: float-orb 15s infinite ease-in-out; }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.11);
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+      transform-style: preserve-3d; will-change: transform;
+      transition: transform 120ms ease-out, border-color 200ms ease;
+    }
+    #glassSpot { transition: opacity .4s, transform .28s ease-out; }
+
+    /* =========================================================================
+       STAGE 3: NEUMORPHISM
+    ========================================================================== */
+    .neu-surface { background-color: #E0E5EC; color: #3B4454; }
+    .neu-raised {
+      background: #E0E5EC; box-shadow: 9px 9px 18px #A3B1C6, -9px -9px 18px #FFFFFF;
+      border-radius: 20px; transition: all 180ms ease;
+    }
+    .neu-inset {
+      background: #E0E5EC; box-shadow: inset 6px 6px 12px #A3B1C6, inset -6px -6px 12px #FFFFFF;
+      border-radius: 20px; transition: all 180ms ease;
+    }
+    .neu-btn {
+      background: #E0E5EC; box-shadow: 6px 6px 12px #A3B1C6, -6px -6px 12px #FFFFFF;
+      border-radius: 14px; transition: all 150ms ease;
+    }
+    .neu-btn:active, .neu-btn.pressed {
+      box-shadow: inset 5px 5px 10px #A3B1C6, inset -5px -5px 10px #FFFFFF;
+      color: #4F46E5; transform: scale(0.98);
+    }
+    input[type="range"].neu-slider {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 12px; border-radius: 999px;
+      background: #E0E5EC; box-shadow: inset 4px 4px 8px #A3B1C6, inset -4px -4px 8px #FFFFFF; outline: none;
+    }
+    input[type="range"].neu-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border-radius: 50%;
+      background: #4F46E5; box-shadow: 3px 3px 8px #A3B1C6, -3px -3px 8px #FFFFFF; cursor: pointer; border: 3px solid #E0E5EC;
+    }
+    input[type="range"].neu-slider::-moz-range-thumb {
+      width: 22px; height: 22px; border-radius: 50%; background: #4F46E5; cursor: pointer; border: 3px solid #E0E5EC;
+    }
+
+    /* =========================================================================
+       STAGE 4: BRUTALISM
+    ========================================================================== */
+    .brutal-card {
+      border: 4px solid #000000; box-shadow: 8px 8px 0px #000000;
+      transition: transform 90ms steps(2), box-shadow 90ms steps(2), background-color 90ms steps(2);
+    }
+    .brutal-card:hover { transform: translate(-6px, -6px); box-shadow: 14px 14px 0px #000000; }
+    .brutal-card:active { transform: translate(4px, 4px); box-shadow: 4px 4px 0px #000000; }
+    .brutal-card.inv { filter: invert(1) hue-rotate(180deg); }
+    .tape {
+      position: absolute; left: -2%; right: -2%; bottom: 0; height: 30px; z-index: 8;
+      background: linear-gradient(135deg, #000 25%, #FFE600 25% 50%, #000 50% 75%, #FFE600 75%);
+      background-size: 40px 40px; animation: tapeMove 1s linear infinite; transform: rotate(-.8deg);
+      border-top: 4px solid #000; border-bottom: 4px solid #000;
+    }
+
+    /* =========================================================================
+       STAGE 5: MAXIMALISM
+    ========================================================================== */
+    .maximal-bg {
+      background-color: #2B0938;
+      background-image: radial-gradient(#FFCC00 1.5px, transparent 1.5px), radial-gradient(#FF2A85 1.5px, #2B0938 1.5px);
+      background-size: 40px 40px; background-position: 0 0, 20px 20px;
+    }
+    .spin-ring {
+      position: absolute; left: 50%; top: 50%; width: min(86vw, 760px); aspect-ratio: 1; margin: calc(min(86vw, 760px) / -2) 0 0 calc(min(86vw, 760px) / -2);
+      border-radius: 50%; pointer-events: none; z-index: 1; opacity: .55;
+      background: conic-gradient(from 0deg, #FF2A85, #FFCC00, #00F5D4, #7928CA, #FF2A85);
+      -webkit-mask: radial-gradient(farthest-side, transparent 66%, #000 67%, #000 72%, transparent 73%);
+      mask: radial-gradient(farthest-side, transparent 66%, #000 67%, #000 72%, transparent 73%);
+      animation: spin 16s linear infinite;
+    }
+    .float-glyph { position: absolute; z-index: 2; pointer-events: none; font-size: 2.4rem; animation: floaty 6s ease-in-out infinite; }
+    .draggable-sticker {
+      cursor: grab; user-select: none; touch-action: none;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    .draggable-sticker:active { cursor: grabbing; transform: scale(1.1) rotate(0deg) !important; z-index: 40; }
+
+    /* =========================================================================
+       STAGE 6: RETRO Y2K / TERMINAL
+    ========================================================================== */
+    .y2k-chrome-bar {
+      background: linear-gradient(180deg, #F0F4F8 0%, #B8C4D0 48%, #8596A6 52%, #E2E8F0 100%);
+      border-bottom: 2px solid #1E293B;
+    }
+    .crt-scanlines {
+      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0, 255, 128, 0.05) 3px, rgba(0, 0, 0, 0.35) 4px);
+    }
+    .crt-vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.75) 100%); }
+    .crt-flicker { animation: flicker 5s infinite; }
+    .blink { animation: blink 1s steps(1) infinite; }
+
+    /* =========================================================================
+       STAGE 7: DARK NEON / CYBERPUNK
+    ========================================================================== */
+    .cyber-perspective-grid {
+      background-size: 50px 50px;
+      background-image: linear-gradient(to right, rgba(0, 245, 212, 0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 0, 127, 0.22) 1px, transparent 1px);
+      transform: perspective(500px) rotateX(62deg); transform-origin: center bottom;
+      animation: gridmove 1.1s linear infinite;
+    }
+    .cyber-sun {
+      position: absolute; left: 0; right: 0; margin: 0 auto; bottom: 70px; z-index: 0; pointer-events: none;
+      width: min(62vw, 480px); aspect-ratio: 1; border-radius: 50%;
+      background: linear-gradient(180deg, #FFE94A 0%, #FF4D8D 50%, #7B2FF7 100%);
+      -webkit-mask-image: linear-gradient(#000 0 46%, transparent 46% 50%, #000 50% 60%, transparent 60% 66%, #000 66% 75%, transparent 75% 82%, #000 82%);
+      mask-image: linear-gradient(#000 0 46%, transparent 46% 50%, #000 50% 60%, transparent 60% 66%, #000 66% 75%, transparent 75% 82%, #000 82%);
+      clip-path: inset(0 0 38% 0); opacity: .9;
+    }
+    .cyber-glow-box { border: 1px solid #00F5D4; box-shadow: 0 0 18px rgba(0, 245, 212, 0.25), inset 0 0 12px rgba(0, 245, 212, 0.1); }
+    .cyber-glow-pink { border: 1px solid #FF007F; box-shadow: 0 0 18px rgba(255, 0, 127, 0.3), inset 0 0 12px rgba(255, 0, 127, 0.12); }
+
+    /* =========================================================================
+       STAGE 8: FINALE
+    ========================================================================== */
+    .grad-text {
+      background: linear-gradient(90deg, #FF3300, #FF7A00, #FFCC00, #00F5D4, #38BDF8, #FF2A85, #FF3300);
+      background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+      animation: gradshift 6s linear infinite;
+    }
+    .glass-card-lite {
+      background: rgba(255,255,255,.12); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,.3); box-shadow: 0 20px 40px -12px rgba(0,0,0,.5);
+    }
+
+    /* =========================================================================
+       KEYFRAMES
+    ========================================================================== */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes floaty { 0%,100% { translate: 0 0; rotate: 0deg; } 50% { translate: 0 -22px; rotate: 10deg; } }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+    @keyframes gridmove { from { background-position: 0 0, 0 0; } to { background-position: 0 0, 0 50px; } }
+    @keyframes tapeMove { to { background-position: 40px 0; } }
+    @keyframes flicker { 0%,100% { opacity: 1; } 91% { opacity: 1; } 92% { opacity: .86; } 93% { opacity: 1; } 96% { opacity: .93; } }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes gradshift { to { background-position: 200% 0; } }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    @keyframes introSafety { to { visibility: hidden; opacity: 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body class="selection:bg-[#FF3300] selection:text-white" data-era="1">
+
+  <!-- INTRO CURTAIN + ERA WARP OVERLAY -->
+  <div id="warp" class="intro" aria-hidden="true" style="background:#FF3300;color:#fff;font-family:'Inter',sans-serif">
+    <div id="warpInner">
+      <div id="warpNum">01</div>
+      <div id="warpName">SWISS MINIMALISM</div>
+      <div id="warpTag">STYLE ODYSSEY · SCROLL TO BEGIN</div>
+    </div>
+  </div>
+
+  <!-- SCROLL HINT -->
+  <div id="scrollHint" aria-hidden="true"><span>Scroll</span><i>↓</i></div>
+
+  <!-- TOP SCROLL PROGRESS BAR & FLOATING ERA HUD -->
+  <div class="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+    <div class="h-1.5 w-full bg-black/20 backdrop-blur">
+      <div id="scrollProgressBar" class="h-full bg-[#FF3300] transition-all duration-75" style="width: 0%"></div>
+    </div>
+    <div class="max-w-[1540px] mx-auto px-4 sm:px-6 pt-3 flex items-center justify-between gap-2">
+      <div class="pointer-events-auto bg-black/80 text-white backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full flex items-center gap-3 font-mono-code text-xs shadow-lg">
+        <span id="hudEraDot" class="w-2.5 h-2.5 rounded-full bg-[#FF3300] inline-block"></span>
+        <span class="font-bold tracking-wider">STYLE ODYSSEY</span>
+        <span class="text-white/40">//</span>
+        <span id="hudCurrentEraName" class="text-[#FF3300] font-semibold">01. SWISS MINIMALISM</span>
+      </div>
+      <div class="pointer-events-auto hidden md:flex items-center gap-2 bg-black/80 text-white backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full font-mono-code text-[11px]">
+        <span class="text-white/60">VELOCITY:</span>
+        <span id="hudScrollVelocity" class="text-[#00F5D4] font-bold w-14">0 px/s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT-SIDE STAGE NAVIGATION -->
+  <nav aria-label="Design Era Stages" class="fixed right-3 sm:right-5 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2.5 bg-black/75 backdrop-blur-md border border-white/15 p-2 rounded-full shadow-2xl">
+    <a href="#stage-1" data-stage-link="1" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold bg-[#FF3300] text-white transition-all" title="01. Minimal / Swiss">01</a>
+    <a href="#stage-2" data-stage-link="2" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold text-white/60 hover:text-white transition-all" title="02. Glassmorphism">02</a>
+    <a href="#stage-3" data-stage-link="3" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold text-white/60 hover:text-white transition-all" title="03. Neumorphism">03</a>
+    <a href="#stage-4" data-stage-link="4" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold text-white/60 hover:text-white transition-all" title="04. Brutalism">04</a>
+    <a href="#stage-5" data-stage-link="5" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold text-white/60 hover:text-white transition-all" title="05. Maximalism">05</a>
+    <a href="#stage-6" data-stage-link="6" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold text-white/60 hover:text-white transition-all" title="06. Retro / Y2K Terminal">06</a>
+    <a href="#stage-7" data-stage-link="7" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold text-white/60 hover:text-white transition-all" title="07. Dark Neon / Cyberpunk">07</a>
+    <a href="#stage-8" data-stage-link="8" class="stage-nav-dot w-7 h-7 rounded-full flex items-center justify-center font-mono-code text-[10px] font-bold text-white/60 hover:text-white transition-all" title="08. Finale & Poll">08</a>
+  </nav>
+
+  <!-- =========================================================================
+       STAGE 01 // MINIMAL / SWISS
+  ========================================================================== -->
+  <section id="stage-1" data-stage="1" data-fade data-bg="#F8F8F6"
+    class="min-h-screen flex items-center border-b border-black/15 py-24 px-4 sm:px-10 lg:px-16 bg-[#F8F8F6]">
+    <div class="swiss-grid absolute inset-0 pointer-events-none"></div>
+    <div class="ghost-num" data-parallax="0.55" style="--stroke:#111; left:-3%; top:2%;">01</div>
+
+    <div class="stage-inner max-w-[1400px] mx-auto w-full font-swiss">
+      <div data-rv="wipe" class="grid grid-cols-2 sm:grid-cols-4 border-t border-b border-black/20 py-3 font-mono-code text-xs text-black/60">
+        <div>ERA 01 // ZÜRICH 1957</div>
+        <div>GRID: 12-COLUMN MODULAR</div>
+        <div class="hidden sm:block">TYPE: GROTESQUE SANS</div>
+        <div class="text-right text-[#FF3300] font-semibold">OBJECTIVE CLARITY</div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-12 items-center">
+        <div class="lg:col-span-7 space-y-6">
+          <div data-rv="wipe" data-rv-i="1" class="flex items-center gap-3">
+            <span class="font-mono-code text-xs uppercase tracking-widest px-2.5 py-1 bg-[#FF3300] text-white font-semibold">STAGE 01</span>
+            <button id="replaySwissWordsBtn" class="font-mono-code text-xs underline text-black/60 hover:text-[#FF3300]">↻ Replay Word-by-Word Reveal</button>
+          </div>
+
+          <h1 id="swissRevealHeading" class="text-4xl sm:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.03] text-[#111111]">
+            Form follows function through mathematical order, generous silence, and typographic precision.
+          </h1>
+
+          <p data-rv="up" data-rv-i="3" class="text-base sm:text-lg text-black/70 max-w-xl leading-relaxed font-normal">
+            In the International Typographic Style, ornament is stripped away. Exposed hairline rules, asymmetric balance, and stark contrast guide the eye without distraction.
+          </p>
+        </div>
+
+        <div class="lg:col-span-5" data-rv="blur" data-rv-i="2">
+          <div id="magneticArena" class="border border-black/20 bg-white p-8 sm:p-12 min-h-[360px] flex flex-col items-center justify-between relative overflow-hidden">
+            <div class="w-full flex justify-between font-mono-code text-[11px] text-black/50 relative z-10">
+              <span>+ INTERACTION // MAGNETIC FIELD</span>
+              <span id="magneticCoords" class="text-[#FF3300]">ΔX: 0px | ΔY: 0px</span>
+            </div>
+
+            <!-- Rotating text ring behind the button -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" style="width:300px;height:300px;">
+              <svg viewBox="0 0 200 200" style="width:100%;height:100%;animation:spin 24s linear infinite;">
+                <defs><path id="swissRing" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/></defs>
+                <text class="font-mono-code" font-size="11" letter-spacing="3.2" fill="rgba(0,0,0,.45)">
+                  <textPath href="#swissRing">FORM FOLLOWS FUNCTION • GRID • ORDER • SILENCE • </textPath>
+                </text>
+              </svg>
+            </div>
+
+            <div class="my-auto py-8 flex items-center justify-center relative z-10">
+              <button id="magneticBtn" class="w-44 h-44 rounded-full bg-[#111111] text-white hover:bg-[#FF3300] transition-colors duration-200 flex flex-col items-center justify-center gap-1 shadow-xl cursor-pointer select-none will-change-transform">
+                <span class="font-mono-code text-[10px] tracking-widest uppercase opacity-75">PULL CURSOR</span>
+                <span id="magneticBtnLabel" class="text-lg font-bold tracking-tight">MAGNETIC</span>
+                <span class="text-xs opacity-80">→</span>
+              </button>
+            </div>
+
+            <div class="w-full flex justify-between font-mono-code text-[11px] text-black/50 border-t border-black/10 pt-3 relative z-10">
+              <span>MOVE CURSOR INSIDE BOX</span>
+              <span>CLICK TO PULSE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-0 left-0 right-0 border-t border-black/15 py-2 overflow-hidden font-mono-code text-[11px] text-black/40 z-10">
+      <div class="swiss-marquee flex w-max whitespace-nowrap">
+        <span class="pr-8">ERA 01 — INTERNATIONAL TYPOGRAPHIC STYLE — HELVETICA — GRID — ASYMMETRY — WHITE SPACE — ERA 01 — INTERNATIONAL TYPOGRAPHIC STYLE — HELVETICA — GRID — ASYMMETRY — WHITE SPACE —</span>
+        <span class="pr-8">ERA 01 — INTERNATIONAL TYPOGRAPHIC STYLE — HELVETICA — GRID — ASYMMETRY — WHITE SPACE — ERA 01 — INTERNATIONAL TYPOGRAPHIC STYLE — HELVETICA — GRID — ASYMMETRY — WHITE SPACE —</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       STAGE 02 // GLASSMORPHISM
+  ========================================================================== -->
+  <section id="stage-2" data-stage="2" data-bg="#0F1026"
+    class="min-h-screen flex items-center py-24 px-4 sm:px-10 lg:px-16 bg-gradient-to-br from-[#0B0C1E] via-[#1B1440] to-[#0D233A] text-white">
+    <div class="glass-orb-1 absolute top-20 left-[12%] w-72 h-72 sm:w-96 sm:h-96 rounded-full bg-gradient-to-tr from-[#FF2A85] to-[#FF7A00] opacity-55 blur-3xl pointer-events-none"></div>
+    <div class="glass-orb-2 absolute bottom-16 right-[10%] w-80 h-80 sm:w-[420px] sm:h-[420px] rounded-full bg-gradient-to-bl from-[#00F5D4] to-[#6366F1] opacity-50 blur-3xl pointer-events-none"></div>
+    <div class="glass-orb-3 absolute top-1/3 left-[48%] w-56 h-56 rounded-full bg-gradient-to-br from-[#A78BFA] to-[#38BDF8] opacity-40 blur-3xl pointer-events-none"></div>
+    <div id="glassSpot" class="absolute pointer-events-none" style="width:560px;height:560px;left:0;top:0;margin:-280px 0 0 -280px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.30),transparent 65%);opacity:0;"></div>
+    <div class="ghost-num" data-parallax="0.6" style="--stroke:#fff; right:-3%; top:4%;">02</div>
+
+    <div class="stage-inner max-w-[1400px] mx-auto w-full space-y-10">
+      <div data-rv="up" class="flex flex-wrap items-end justify-between gap-4 border-b border-white/15 pb-6">
+        <div>
+          <span class="font-mono-code text-xs uppercase tracking-widest text-[#38BDF8]">STAGE 02 // TRANSLUCENT DEPTH</span>
+          <h2 class="text-4xl sm:text-6xl font-extrabold tracking-tight mt-1">Glassmorphism &amp; Specular Light</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="font-mono-code text-xs text-white/70">FROST BLUR:</span>
+          <input id="glassBlurRange" type="range" min="4" max="40" value="22" aria-label="Glass blur intensity" class="w-28 accent-[#38BDF8]" />
+          <span id="glassBlurVal" class="font-mono-code text-xs text-[#38BDF8] w-10">22px</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-7" style="perspective: 1100px;">
+        <div data-rv="tilt" data-rv-i="0" class="tilt-glass-card glass-card rounded-3xl p-7 relative overflow-hidden cursor-pointer">
+          <div class="glare-layer absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-200"></div>
+          <div class="flex items-center justify-between text-xs font-mono-code text-white/70 mb-6">
+            <span>OPTIC LAYER // 01</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-white/15 border border-white/25 text-white">BLUR 22PX</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/30 to-white/5 border border-white/30 flex items-center justify-center text-2xl mb-5">✦</div>
+          <h3 class="text-2xl font-bold tracking-tight">Specular Refraction</h3>
+          <p class="text-sm text-white/75 mt-2 leading-relaxed">Background gradients bleed through frosted acrylic panes while a 1px semi-transparent border catches directional light.</p>
+          <div class="mt-6 pt-4 border-t border-white/15 flex justify-between font-mono-code text-xs text-[#38BDF8]"><span>HOVER TO TILT 3D</span><span class="tilt-readout">0° / 0°</span></div>
+        </div>
+
+        <div data-rv="tilt" data-rv-i="1" class="tilt-glass-card glass-card rounded-3xl p-7 relative overflow-hidden cursor-pointer">
+          <div class="glare-layer absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-200"></div>
+          <div class="flex items-center justify-between text-xs font-mono-code text-white/70 mb-6">
+            <span>OPTIC LAYER // 02</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-[#38BDF8]/20 border border-[#38BDF8]/40 text-[#38BDF8]">SPATIAL OS</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/30 to-white/5 border border-white/30 flex items-center justify-center text-2xl mb-5">◈</div>
+          <h3 class="text-2xl font-bold tracking-tight">Dynamic Light Glare</h3>
+          <p class="text-sm text-white/75 mt-2 leading-relaxed">As your cursor glides over each card, a radial highlight tracks the angle of incidence across the glass surface.</p>
+          <div class="mt-6 pt-4 border-t border-white/15 flex justify-between font-mono-code text-xs text-[#38BDF8]"><span>HOVER TO TILT 3D</span><span class="tilt-readout">0° / 0°</span></div>
+        </div>
+
+        <div data-rv="tilt" data-rv-i="2" class="tilt-glass-card glass-card rounded-3xl p-7 relative overflow-hidden cursor-pointer">
+          <div class="glare-layer absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-200"></div>
+          <div class="flex items-center justify-between text-xs font-mono-code text-white/70 mb-6">
+            <span>OPTIC LAYER // 03</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-pink-500/20 border border-pink-400/40 text-pink-300">Z-INDEX +30</span>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/30 to-white/5 border border-white/30 flex items-center justify-center text-2xl mb-5">◎</div>
+          <h3 class="text-2xl font-bold tracking-tight">Layered Hierarchy</h3>
+          <p class="text-sm text-white/75 mt-2 leading-relaxed">Sense of depth is established without heavy solid borders—letting vivid ambient orbs float beneath the interface.</p>
+          <div class="mt-6 pt-4 border-t border-white/15 flex justify-between font-mono-code text-xs text-[#38BDF8]"><span>HOVER TO TILT 3D</span><span class="tilt-readout">0° / 0°</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       STAGE 03 // NEUMORPHISM
+  ========================================================================== -->
+  <section id="stage-3" data-stage="3" data-fade data-bg="#E0E5EC"
+    class="min-h-screen neu-surface flex items-center py-24 px-4 sm:px-10 lg:px-16">
+    <div class="ghost-num" data-parallax="0.5" style="--stroke:#8A97AC; left:-2%; bottom:-6%;">03</div>
+
+    <div class="stage-inner max-w-[1400px] mx-auto w-full space-y-10">
+      <div data-rv="up" class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <span class="font-mono-code text-xs uppercase tracking-widest text-[#4F46E5] font-semibold">STAGE 03 // SOFT EXTRUSION</span>
+          <h2 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#2D3748] mt-1">Neumorphic Tactile Console</h2>
+        </div>
+        <p class="text-sm text-[#64748B] max-w-md">Elements appear molded from the same matte clay surface using paired highlight and shadow vectors. Press the switches and glide the faders below.</p>
+      </div>
+
+      <div data-rv="blur" data-rv-i="1" class="neu-raised p-6 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-5 space-y-6">
+          <div class="font-mono-code text-xs text-[#64748B] uppercase tracking-wider">TACTILE PUSH MATRIX (CLICK TO PRESS IN)</div>
+          <div class="grid grid-cols-2 gap-5">
+            <button data-neu-toggle="bass" class="neu-toggle-btn neu-btn pressed p-5 flex flex-col items-start justify-between h-28 cursor-pointer">
+              <span class="w-3 h-3 rounded-full bg-[#4F46E5] shadow-sm neu-led"></span>
+              <div class="text-left"><div class="font-bold text-sm">SUB HARMONICS</div><div class="font-mono-code text-[11px] opacity-70 neu-state-text">ENGAGED</div></div>
+            </button>
+            <button data-neu-toggle="spatial" class="neu-toggle-btn neu-btn p-5 flex flex-col items-start justify-between h-28 cursor-pointer">
+              <span class="w-3 h-3 rounded-full bg-slate-400 shadow-sm neu-led"></span>
+              <div class="text-left"><div class="font-bold text-sm">AMBIENT DELAY</div><div class="font-mono-code text-[11px] opacity-70 neu-state-text">STANDBY</div></div>
+            </button>
+            <button data-neu-toggle="warmth" class="neu-toggle-btn neu-btn pressed p-5 flex flex-col items-start justify-between h-28 cursor-pointer">
+              <span class="w-3 h-3 rounded-full bg-[#4F46E5] shadow-sm neu-led"></span>
+              <div class="text-left"><div class="font-bold text-sm">ANALOG WARMTH</div><div class="font-mono-code text-[11px] opacity-70 neu-state-text">ENGAGED</div></div>
+            </button>
+            <button data-neu-toggle="limiter" class="neu-toggle-btn neu-btn p-5 flex flex-col items-start justify-between h-28 cursor-pointer">
+              <span class="w-3 h-3 rounded-full bg-slate-400 shadow-sm neu-led"></span>
+              <div class="text-left"><div class="font-bold text-sm">SOFT CLIPPER</div><div class="font-mono-code text-[11px] opacity-70 neu-state-text">STANDBY</div></div>
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 space-y-6">
+          <div class="neu-inset p-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="font-mono-code text-[11px] text-[#64748B]">EXTRUDED ACOUSTIC OUTPUT</div>
+              <div id="neuReadoutTitle" class="text-2xl sm:text-3xl font-extrabold text-[#4F46E5] mt-1">74% RESONANCE // 432 Hz</div>
+            </div>
+            <div class="neu-raised px-4 py-2 font-mono-code text-xs font-bold text-[#3B4454]">ACTIVE CHANNELS: <span id="neuActiveCount" class="text-[#4F46E5]">2 / 4</span></div>
+          </div>
+          <div class="space-y-5 px-1">
+            <div>
+              <div class="flex justify-between font-mono-code text-xs mb-2"><span>SURFACE EXTRUSION DEPTH (RESONANCE)</span><span id="neuSlider1Val" class="font-bold text-[#4F46E5]">74%</span></div>
+              <input id="neuSlider1" type="range" min="10" max="100" value="74" class="neu-slider" />
+            </div>
+            <div>
+              <div class="flex justify-between font-mono-code text-xs mb-2"><span>HARMONIC CARRIER FREQUENCY</span><span id="neuSlider2Val" class="font-bold text-[#4F46E5]">432 Hz</span></div>
+              <input id="neuSlider2" type="range" min="110" max="880" value="432" class="neu-slider" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       STAGE 04 // BRUTALISM
+  ========================================================================== -->
+  <section id="stage-4" data-stage="4" data-fade data-bg="#FFE600"
+    class="min-h-screen flex items-center bg-[#FFE600] text-black py-24 pb-32 px-4 sm:px-10 lg:px-16 font-brutal">
+    <div class="ghost-num" data-parallax="0.45" style="--stroke:#000; right:-2%; bottom:-4%; opacity:.18;">04</div>
+
+    <div class="stage-inner max-w-[1400px] mx-auto w-full space-y-10">
+      <div data-rv="snap" class="flex flex-wrap items-center justify-between gap-4 border-4 border-black bg-white p-6 shadow-[8px_8px_0px_#000]">
+        <div>
+          <span class="font-mono-code text-xs font-bold bg-black text-[#FFE600] px-2.5 py-1 uppercase">STAGE 04 // RAW ANTI-POLISH</span>
+          <h2 class="text-4xl sm:text-6xl font-black uppercase tracking-tight mt-2">BRUTALISM NEVER APOLOGIZES.</h2>
+        </div>
+        <button id="brutalStampBtn" class="brutal-card bg-[#FF2A85] text-white font-mono-code text-sm font-bold px-5 py-3 uppercase cursor-pointer">
+          💥 STAMP CHAOS BADGE (<span id="brutalStampCount">0</span>)
+        </button>
+      </div>
+
+      <div id="brutalGrid" class="grid grid-cols-1 md:grid-cols-3 gap-7">
+        <div data-rv="snap" data-rv-i="1" class="brutal-card bg-[#00F0FF] p-7 cursor-pointer select-none">
+          <div class="flex justify-between items-center border-b-4 border-black pb-3 mb-4 font-mono-code text-xs font-bold"><span>RULE #01</span><span class="bg-black text-white px-2 py-0.5">4PX SOLID #000</span></div>
+          <h3 class="text-3xl font-black uppercase leading-none">HARD OFFSET SHADOWS</h3>
+          <p class="font-mono-code text-xs mt-4 leading-relaxed">Zero gaussian blur. Shadows are solid black geometric slabs offset at 45 degrees that snap on hover and click.</p>
+          <div class="mt-6 inline-block border-2 border-black bg-white px-3 py-1 font-mono-code text-xs font-bold">CLICK TO INVERT SLAB →</div>
+        </div>
+        <div data-rv="snap" data-rv-i="2" class="brutal-card bg-[#FF2A85] text-white p-7 cursor-pointer select-none">
+          <div class="flex justify-between items-center border-b-4 border-black pb-3 mb-4 font-mono-code text-xs font-bold"><span>RULE #02</span><span class="bg-[#FFE600] text-black border-2 border-black px-2 py-0.5">LOUD CLASH</span></div>
+          <h3 class="text-3xl font-black uppercase leading-none">UNAPOLOGETIC COLOR</h3>
+          <p class="font-mono-code text-xs mt-4 leading-relaxed">High-saturation primaries collide head-on with raw system and monospace typography.</p>
+          <div class="mt-6 inline-block border-2 border-black bg-black text-[#FFE600] px-3 py-1 font-mono-code text-xs font-bold">CLICK TO INVERT SLAB →</div>
+        </div>
+        <div data-rv="snap" data-rv-i="3" class="brutal-card bg-white text-black p-7 cursor-pointer select-none">
+          <div class="flex justify-between items-center border-b-4 border-black pb-3 mb-4 font-mono-code text-xs font-bold"><span>RULE #03</span><span class="bg-[#00F59B] text-black border-2 border-black px-2 py-0.5">HONEST HTML</span></div>
+          <h3 class="text-3xl font-black uppercase leading-none">EXPOSED STRUCTURE</h3>
+          <p class="font-mono-code text-xs mt-4 leading-relaxed">Containers look like containers. Buttons look like physical switches bolted directly onto the viewport.</p>
+          <div class="mt-6 inline-block border-2 border-black bg-[#FFE600] text-black px-3 py-1 font-mono-code text-xs font-bold">CLICK TO INVERT SLAB →</div>
+        </div>
+      </div>
+    </div>
+    <div class="tape" aria-hidden="true"></div>
+  </section>
+
+  <!-- =========================================================================
+       STAGE 05 // MAXIMALISM
+  ========================================================================== -->
+  <section id="stage-5" data-stage="5" data-fade data-bg="#2B0938"
+    class="min-h-screen maximal-bg text-white flex flex-col justify-between py-20">
+    <div class="spin-ring" aria-hidden="true"></div>
+    <span class="float-glyph text-[#FFCC00]" data-parallax="-0.25" style="left:6%;top:30%;">✦</span>
+    <span class="float-glyph text-[#00F5D4]" data-parallax="0.3" style="right:7%;top:42%;animation-delay:-2s;">✺</span>
+    <span class="float-glyph text-[#FF2A85]" data-parallax="-0.4" style="left:18%;bottom:20%;animation-delay:-4s;">✿</span>
+    <span class="float-glyph text-white" data-parallax="0.2" style="right:20%;top:20%;animation-delay:-1s;">◐</span>
+
+    <div class="stage-inner border-y-4 border-[#FFCC00] bg-gradient-to-r from-[#FF2A85] via-[#7928CA] to-[#FF7A00] py-3 overflow-hidden select-none w-full">
+      <div id="maximalTickerTrack" class="whitespace-nowrap font-maximal font-extrabold text-2xl sm:text-4xl uppercase tracking-wider flex gap-8 will-change-transform w-max">
+        <span>★ MORE IS MORE ★ DOPAMINE COLLAGE ★ DRAG THE STICKERS BELOW ★ SCROLL FASTER TO ACCELERATE TICKER ★</span>
+        <span>★ MORE IS MORE ★ DOPAMINE COLLAGE ★ DRAG THE STICKERS BELOW ★ SCROLL FASTER TO ACCELERATE TICKER ★</span>
+        <span>★ MORE IS MORE ★ DOPAMINE COLLAGE ★ DRAG THE STICKERS BELOW ★ SCROLL FASTER TO ACCELERATE TICKER ★</span>
+        <span>★ MORE IS MORE ★ DOPAMINE COLLAGE ★ DRAG THE STICKERS BELOW ★ SCROLL FASTER TO ACCELERATE TICKER ★</span>
+      </div>
+    </div>
+
+    <div id="stickerPlayground" class="relative z-10 max-w-[1400px] mx-auto w-full px-4 sm:px-10 py-14 min-h-[480px] flex flex-col items-center justify-center text-center">
+      <span data-rv="pop" class="font-mono-code text-xs uppercase px-3 py-1 rounded-full bg-[#FFCC00] text-black font-bold mb-3">STAGE 05 // VISUAL ABUNDANCE (DRAG ANY STICKER!)</span>
+
+      <h2 data-rv="pop" data-rv-i="1" class="font-serif-max italic text-5xl sm:text-7xl xl:text-8xl font-bold leading-[0.92] bg-gradient-to-r from-[#FFCC00] via-[#FF2A85] to-[#00F5D4] bg-clip-text text-transparent drop-shadow-sm select-none">
+        Joyful Sensory Overload.
+      </h2>
+
+      <p data-rv="up" data-rv-i="2" class="font-mono-code text-xs sm:text-sm text-white/85 max-w-lg mt-4 select-none">Grab and drag the holographic stickers around the canvas, or scroll rapidly to watch the kinetic ticker accelerate.</p>
+
+      <div data-rv="up" data-rv-i="3" class="mt-6 flex flex-wrap items-center justify-center gap-3 z-30">
+        <button id="scatterStickersBtn" class="px-4 py-2 rounded-full bg-[#FFCC00] text-black font-mono-code text-xs font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform">🔀 SHUFFLE STICKERS</button>
+        <button id="turboTickerBtn" class="px-4 py-2 rounded-full bg-[#00F5D4] text-black font-mono-code text-xs font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform">⚡ BOOST TICKER SPEED</button>
+      </div>
+
+      <div data-sticker data-rv="stick" data-rv-i="2" id="stk-1" style="top: 12%; left: 8%; transform: rotate(-11deg);" class="draggable-sticker absolute px-4 py-2 rounded-2xl bg-[#FFCC00] text-black border-4 border-black shadow-[6px_6px_0px_#000] font-maximal font-extrabold text-sm sm:text-base">★ DOPAMINE UI</div>
+      <div data-sticker data-rv="stick" data-rv-i="3" id="stk-2" style="top: 18%; right: 9%; transform: rotate(9deg);" class="draggable-sticker absolute px-5 py-2.5 rounded-full bg-gradient-to-r from-[#00F5D4] to-[#38BDF8] text-black border-4 border-black shadow-[6px_6px_0px_#000] font-mono-code font-bold text-sm">💿 2026 REMIX EDITION</div>
+      <div data-sticker data-rv="stick" data-rv-i="4" id="stk-3" style="bottom: 14%; left: 10%; transform: rotate(7deg);" class="draggable-sticker absolute px-4 py-2 rounded-xl bg-[#FF2A85] text-white border-4 border-black shadow-[6px_6px_0px_#000] font-serif-max italic font-bold text-lg">✿ Layers on Layers</div>
+      <div data-sticker data-rv="stick" data-rv-i="5" id="stk-4" style="bottom: 16%; right: 12%; transform: rotate(-8deg);" class="draggable-sticker absolute px-4 py-2 rounded-none bg-white text-black border-4 border-black shadow-[6px_6px_0px_#FF2A85] font-mono-code font-bold text-xs">👁️ ANTI-MINIMALISM CLUB</div>
+    </div>
+
+    <div class="relative z-10 border-t-4 border-black bg-[#00F5D4] text-black py-2 px-4 font-mono-code text-xs font-bold flex justify-between">
+      <span>TICKER VELOCITY MULTIPLIER: <strong id="tickerSpeedReadout">1.0x</strong></span>
+      <span>DRAGGABLE ELEMENTS: ACTIVE</span>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       STAGE 06 // RETRO Y2K / TERMINAL
+  ========================================================================== -->
+  <section id="stage-6" data-stage="6" data-fade data-bg="#050B07"
+    class="min-h-screen bg-[#050B07] text-[#00FF66] crt-scanlines flex items-center py-24 px-4 sm:px-10 lg:px-16">
+    <div class="crt-vignette absolute inset-0 pointer-events-none z-[5]"></div>
+    <div class="ghost-num" data-parallax="0.5" style="--stroke:#00FF66; right:-2%; top:2%; opacity:.16; font-family:'VT323',monospace;">06</div>
+
+    <div class="stage-inner max-w-[1200px] mx-auto w-full space-y-8">
+      <div data-rv="glitch" class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span class="font-mono-code text-xs text-[#00FF66]/70">STAGE 06 // MILLENNIUM MAINFRAME (1999)</span>
+          <h2 class="font-y2k text-5xl sm:text-7xl tracking-wide text-[#00FF66] drop-shadow-[0_0_10px_rgba(0,255,102,0.45)]">CYBER-OS // V2.000 TERMINAL<span class="blink">_</span></h2>
+        </div>
+        <button id="y2kRebootBtn" class="font-mono-code text-xs px-4 py-2 bg-[#00FF66]/15 border border-[#00FF66] text-[#00FF66] hover:bg-[#00FF66] hover:text-black transition-colors">↻ REPLAY BOOT SEQUENCE</button>
+      </div>
+
+      <div data-rv="glitch" data-rv-i="2" class="crt-flicker border-2 border-[#94A3B8] shadow-[0_0_40px_rgba(0,255,102,0.18)] bg-[#030704]">
+        <div class="y2k-chrome-bar px-4 py-2 flex items-center justify-between text-black font-mono-code text-xs font-bold">
+          <div class="flex items-center gap-2"><span class="w-3 h-3 bg-[#00FF66] border border-black inline-block"></span><span>C:\Y2K_ODYSSEY\BIOS_SHELL.EXE</span></div>
+          <div class="flex items-center gap-1">
+            <span class="px-2 py-0.5 bg-slate-200 border border-slate-600 text-[10px]">_</span>
+            <span class="px-2 py-0.5 bg-slate-200 border border-slate-600 text-[10px]">□</span>
+            <span class="px-2 py-0.5 bg-red-500 text-white border border-slate-800 text-[10px]">×</span>
+          </div>
+        </div>
+
+        <div id="y2kConsoleOutput" data-lenis-prevent class="p-5 sm:p-6 font-y2k text-xl sm:text-2xl h-72 overflow-y-auto space-y-1.5 leading-snug"></div>
+
+        <div class="border-t border-[#00FF66]/30 p-4 bg-[#07120B] space-y-3">
+          <div class="flex flex-wrap items-center gap-2 font-mono-code text-xs">
+            <span class="text-[#00FF66]/60">QUICK COMMANDS:</span>
+            <button data-cmd="help" class="y2k-cmd-chip px-2.5 py-1 border border-[#00FF66]/50 hover:bg-[#00FF66] hover:text-black transition-colors">help</button>
+            <button data-cmd="specs" class="y2k-cmd-chip px-2.5 py-1 border border-[#00FF66]/50 hover:bg-[#00FF66] hover:text-black transition-colors">specs</button>
+            <button data-cmd="matrix" class="y2k-cmd-chip px-2.5 py-1 border border-[#00FF66]/50 hover:bg-[#00FF66] hover:text-black transition-colors">matrix</button>
+            <button data-cmd="y2k" class="y2k-cmd-chip px-2.5 py-1 border border-[#00FF66]/50 hover:bg-[#00FF66] hover:text-black transition-colors">y2k</button>
+            <button data-cmd="clear" class="y2k-cmd-chip px-2.5 py-1 border border-[#00FF66]/50 hover:bg-[#00FF66] hover:text-black transition-colors">clear</button>
+          </div>
+          <form id="y2kConsoleForm" class="flex items-center gap-2 font-mono-code text-sm">
+            <span class="text-[#00FF66] font-bold">guest@y2k-node:~#</span>
+            <input id="y2kConsoleInput" type="text" placeholder="Type a command (e.g. help, specs, matrix) and press Enter..." aria-label="Terminal command input" class="flex-1 bg-transparent border-b border-[#00FF66]/50 focus:border-[#00FF66] focus:outline-none text-[#00FF66] py-1" />
+            <button type="submit" class="px-4 py-1 bg-[#00FF66] text-black font-bold uppercase text-xs">EXEC</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       STAGE 07 // DARK NEON / CYBERPUNK
+  ========================================================================== -->
+  <section id="stage-7" data-stage="7" data-bg="#060411"
+    class="min-h-screen bg-[#060411] text-white flex items-center py-24 px-4 sm:px-10 lg:px-16">
+    <canvas id="cyberParticleCanvas" class="absolute inset-0 w-full h-full z-0"></canvas>
+    <div class="cyber-sun" aria-hidden="true"></div>
+    <div class="cyber-perspective-grid absolute inset-x-0 bottom-0 h-72 pointer-events-none z-0 opacity-80"></div>
+    <div class="ghost-num font-cyber" data-parallax="0.5" style="--stroke:#00F5D4; left:-2%; top:2%; opacity:.16;">07</div>
+
+    <div class="stage-inner max-w-[1400px] mx-auto w-full pointer-events-none space-y-10">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div data-rv="glitch">
+          <span class="font-mono-code text-xs text-[#FF007F] uppercase tracking-widest font-bold">STAGE 07 // SYNTHWAVE &amp; NEURAL NET (2088)</span>
+          <h2 class="font-cyber text-4xl sm:text-6xl font-black uppercase tracking-wider text-[#00F5D4] drop-shadow-[0_0_16px_rgba(0,245,212,0.55)] mt-1">NEON HORIZON // SECTOR 07</h2>
+        </div>
+        <div class="pointer-events-auto flex items-center gap-2">
+          <button id="cyberPulseBtn" class="font-mono-code text-xs px-4 py-2 cyber-glow-pink bg-[#FF007F]/20 text-[#FF007F] hover:bg-[#FF007F] hover:text-white transition-colors">⚡ EMIT SHOCKWAVE PULSE</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pointer-events-auto">
+        <div data-rv="slide" data-rv-i="0" class="cyber-glow-box bg-[#060411]/80 backdrop-blur-md p-6">
+          <div class="font-mono-code text-xs text-[#00F5D4] mb-2">NODE // 01</div>
+          <h3 class="font-cyber text-xl font-bold text-white">Reactive Particle Mesh</h3>
+          <p class="text-sm text-white/75 mt-2 leading-relaxed">Move your cursor across this sector to bend the synaptic particle constellation and ignite neon proximity links.</p>
+        </div>
+        <div data-rv="slide" data-rv-i="1" class="cyber-glow-pink bg-[#060411]/80 backdrop-blur-md p-6">
+          <div class="font-mono-code text-xs text-[#FF007F] mb-2">NODE // 02</div>
+          <h3 class="font-cyber text-xl font-bold text-white">Perspective Horizon</h3>
+          <p class="text-sm text-white/75 mt-2 leading-relaxed">Wireframe vector floors receding toward a synthetic vanishing point anchor high-contrast dark interfaces.</p>
+        </div>
+        <div data-rv="slide" data-rv-i="2" class="cyber-glow-box bg-[#060411]/80 backdrop-blur-md p-6">
+          <div class="font-mono-code text-xs text-[#00F5D4] mb-2">NODE // 03</div>
+          <h3 class="font-cyber text-xl font-bold text-white">Bioluminescent Accents</h3>
+          <p class="text-sm text-white/75 mt-2 leading-relaxed">Deep void backgrounds let electric cyan (#00F5D4) and laser magenta (#FF007F) borders bloom like CRT neon tubes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       STAGE 08 // FINALE
+  ========================================================================== -->
+  <section id="stage-8" data-stage="8" data-bg="#0F1117"
+    class="min-h-screen bg-[#0F1117] text-white flex items-center py-24 px-4 sm:px-10 lg:px-16">
+    <div class="glass-orb-1 absolute top-10 left-[5%] w-80 h-80 rounded-full bg-gradient-to-tr from-[#FF3300] to-[#FF7A00] opacity-30 blur-3xl pointer-events-none"></div>
+    <div class="glass-orb-2 absolute bottom-10 right-[5%] w-96 h-96 rounded-full bg-gradient-to-bl from-[#00F5D4] to-[#6366F1] opacity-30 blur-3xl pointer-events-none"></div>
+    <div class="glass-orb-3 absolute top-1/2 left-1/2 w-72 h-72 rounded-full bg-gradient-to-br from-[#FF2A85] to-[#FFCC00] opacity-20 blur-3xl pointer-events-none"></div>
+    <div class="ghost-num" data-parallax="0.5" style="--stroke:#FF7A00; right:-2%; top:0%;">08</div>
+
+    <div class="stage-inner max-w-[1400px] mx-auto w-full space-y-12">
+      <div data-rv="up" class="text-center max-w-3xl mx-auto space-y-3">
+        <span class="font-mono-code text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-white/10 text-[#FF7A00] border border-white/15">STAGE 08 // GRAND CONVERGENCE</span>
+        <h2 class="grad-text text-4xl sm:text-6xl font-extrabold tracking-tight">Every Era Leaves a Fingerprint.</h2>
+        <p class="text-base text-white/70">Test the live Rosetta Morph Component below to see the exact same UI card restyled across eras on the fly, then cast your vote for the design era that resonates most with you.</p>
+      </div>
+
+      <div data-rv="blur" data-rv-i="1" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-10">
+        <div class="lg:col-span-5 space-y-4">
+          <div class="font-mono-code text-xs text-[#FF7A00] uppercase">LIVE STYLE MORPHER</div>
+          <h3 class="text-2xl sm:text-3xl font-bold">One Component, Seven Realities</h3>
+          <p class="text-sm text-white/70 leading-relaxed">Content and functionality stay 100% identical—only typography, borders, depth, and surface physics transform.</p>
+          <div class="flex flex-wrap gap-2 pt-2">
+            <button data-morph="swiss" class="morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-[#FF3300] text-white font-bold">01. Swiss</button>
+            <button data-morph="glass" class="morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-white/10 hover:bg-white/20">02. Glass</button>
+            <button data-morph="neu" class="morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-white/10 hover:bg-white/20">03. Neumorphic</button>
+            <button data-morph="brutal" class="morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-white/10 hover:bg-white/20">04. Brutal</button>
+            <button data-morph="maximal" class="morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-white/10 hover:bg-white/20">05. Maximal</button>
+            <button data-morph="y2k" class="morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-white/10 hover:bg-white/20">06. Y2K</button>
+            <button data-morph="cyber" class="morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-white/10 hover:bg-white/20">07. Cyber</button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 flex items-center justify-center p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-black min-h-[280px]">
+          <div id="rosettaPreviewCard" class="w-full max-w-md transition-all duration-300 p-7 bg-[#F8F8F6] text-[#111111] border border-black/20 font-swiss">
+            <div class="flex items-center justify-between text-xs font-mono-code opacity-75 mb-3"><span id="rosettaTag">SWISS // 1957</span><span>4.9 ★</span></div>
+            <h4 class="text-2xl font-bold">Synthesizer Module MK-IV</h4>
+            <p class="text-sm opacity-80 mt-2">Precision harmonic oscillator with real-time envelope shaping and tactile feedback.</p>
+            <div class="mt-6 flex items-center justify-between">
+              <span class="text-xl font-bold">$240</span>
+              <button id="rosettaActionBtn" class="px-4 py-2 bg-[#FF3300] text-white text-xs font-mono-code uppercase font-bold">DEPLOY MODULE →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-rv="up" class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="font-mono-code text-xs text-[#00F5D4] uppercase">COMMUNITY POLL // PICK YOUR FAVORITE</span>
+            <h3 class="text-2xl font-bold mt-0.5">Which Design Era Wins Your Vote?</h3>
+          </div>
+          <span id="totalVotesLabel" class="font-mono-code text-xs text-white/60">1,420 TOTAL VOTES CAST</span>
+        </div>
+        <div id="votingGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3"></div>
+      </div>
+
+      <footer class="border-t border-white/15 pt-6 flex flex-wrap items-center justify-between gap-4 font-mono-code text-xs text-white/50">
+        <span>STYLE ODYSSEY // 8-STAGE INTERACTIVE SCROLL EXHIBITION</span>
+        <a href="#stage-1" class="text-[#FF7A00] hover:underline">↑ GLIDE BACK TO STAGE 01</a>
+      </footer>
+    </div>
+  </section>
+
+  <div id="odysseyToast" class="fixed bottom-5 left-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <script>
+    (function () {
+      'use strict';
+      const $ = (s, r = document) => r.querySelector(s);
+      const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+      const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // --- TOAST + CONFETTI BURST HELPERS ---
+      function showToast(msg) {
+        const box = $('#odysseyToast');
+        if (!box) return;
+        const el = document.createElement('div');
+        el.className = 'px-4 py-2.5 bg-black/90 text-white border border-white/25 rounded-full font-mono-code text-xs shadow-xl transition-opacity duration-300';
+        el.textContent = msg;
+        box.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2300);
+      }
+
+      function burst(x, y, color) {
+        if (reduce) return;
+        const palette = ['#FF3300', '#00F5D4', '#FFCC00', '#FF2A85', '#38BDF8'];
+        for (let i = 0; i < 18; i++) {
+          const s = document.createElement('span');
+          s.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;width:8px;height:8px;pointer-events:none;z-index:70;border-radius:' + (i % 2 ? '50%' : '0') + ';background:' + (color || palette[i % palette.length]);
+          document.body.appendChild(s);
+          const a = Math.random() * Math.PI * 2;
+          const d = 50 + Math.random() * 130;
+          const anim = s.animate([
+            { transform: 'translate(0px,0px) scale(1) rotate(0deg)', opacity: 1 },
+            { transform: 'translate(' + (Math.cos(a) * d) + 'px,' + (Math.sin(a) * d + 50) + 'px) scale(0) rotate(240deg)', opacity: 0 }
+          ], { duration: 650 + Math.random() * 450, easing: 'cubic-bezier(.2,.8,.3,1)' });
+          anim.onfinish = () => s.remove();
+        }
+      }
+
+      // =========================================================================
+      // SMOOTH SCROLL (LENIS) + NAV CLICKS
+      // =========================================================================
+      let lenis = null;
+      if (typeof Lenis !== 'undefined' && !reduce) {
+        lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.95, smoothWheel: true });
+        const lenisRaf = (t) => { lenis.raf(t); requestAnimationFrame(lenisRaf); };
+        requestAnimationFrame(lenisRaf);
+      } else {
+        document.documentElement.style.scrollBehavior = 'smooth';
+      }
+
+      $$('a[href^="#stage-"]').forEach((a) => {
+        a.addEventListener('click', (e) => {
+          const target = $(a.getAttribute('href'));
+          if (!target) return;
+          e.preventDefault();
+          if (lenis) lenis.scrollTo(target, { duration: 1.6 });
+          else target.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+
+      // =========================================================================
+      // ERA CONFIG (colors + warp transition shapes)
+      // =========================================================================
+      const FULL_POLY = 'polygon(0 0,100% 0,100% 100%,0 100%)';
+      const LINE_POLY = 'polygon(0 50%,100% 50%,100% 50%,0 50%)';
+
+      const ERAS = {
+        1: { name: 'SWISS MINIMALISM', tag: 'ZÜRICH · 1957', accent: '#FF3300', bg: '#FF3300', fg: '#FFFFFF', font: "'Inter',sans-serif" },
+        2: { name: 'GLASSMORPHISM', tag: 'FROSTED OPTICS · 2020', accent: '#38BDF8', bg: 'linear-gradient(135deg,#FF2A85,#6366F1 55%,#00F5D4)', fg: '#FFFFFF', font: "'Inter',sans-serif" },
+        3: { name: 'NEUMORPHISM', tag: 'SOFT EXTRUSION · 2019', accent: '#4F46E5', bg: '#E0E5EC', fg: '#4F46E5', font: "'Inter',sans-serif" },
+        4: { name: 'NEO-BRUTALISM', tag: 'RAW ANTI-POLISH', accent: '#FF2A85', bg: '#FFE600', fg: '#000000', font: "'Space Grotesk',sans-serif" },
+        5: { name: 'MAXIMALISM', tag: 'MORE IS MORE', accent: '#FFCC00', bg: 'linear-gradient(120deg,#FF2A85,#7928CA,#FF7A00)', fg: '#FFCC00', font: "'Syne',sans-serif" },
+        6: { name: 'Y2K TERMINAL', tag: 'MILLENNIUM · 1999', accent: '#00FF66', bg: '#050B07', fg: '#00FF66', font: "'VT323',monospace", scan: true },
+        7: { name: 'CYBERPUNK NEON', tag: 'SYNTHWAVE · 2088', accent: '#00F5D4', bg: '#060411', fg: '#00F5D4', font: "'Orbitron',sans-serif", scan: true },
+        8: { name: 'FINALE SYNTHESIS', tag: 'GRAND CONVERGENCE', accent: '#FF7A00', bg: 'radial-gradient(circle at 30% 30%,#2B1B5C,#0F1117 70%)', fg: '#FF7A00', font: "'Fraunces',serif" }
+      };
+
+      // cover = overlay grows in, uncover = overlay leaves (each era gets its own shape)
+      const TRANS = {
+        1: { cover: ['inset(100% 0 0 0)', 'inset(0% 0 0 0)'], uncover: ['inset(0 0 0 0)', 'inset(0 0 100% 0)'] },
+        2: { cover: ['circle(0% at 50% 50%)', 'circle(78% at 50% 50%)'], uncover: ['inset(0 0 0 0)', 'inset(100% 0 0 0)'] },
+        3: { cover: ['inset(0 100% 0 0)', 'inset(0 0 0 0)'], uncover: ['inset(0 0 0 0)', 'inset(0 0 0 100%)'] },
+        4: { cover: ['polygon(0 0,0 0,0 100%,0 100%)', 'polygon(0 0,135% 0,100% 100%,0 100%)'], uncover: ['polygon(0 0,135% 0,100% 100%,0 100%)', 'polygon(135% 0,135% 0,100% 100%,100% 100%)'], ce: 'steps(6,end)', ue: 'steps(6,end)' },
+        5: { cover: ['circle(0% at 0% 100%)', 'circle(145% at 0% 100%)'], uncover: ['circle(145% at 100% 0%)', 'circle(0% at 100% 0%)'] },
+        6: { cover: ['inset(0 0 100% 0)', 'inset(0 0 0 0)'], uncover: ['inset(0 0 0 0)', 'inset(0 0 0 100%)'], ce: 'steps(8,end)', ue: 'steps(8,end)' },
+        7: { cover: [LINE_POLY, FULL_POLY], uncover: [FULL_POLY, LINE_POLY], ce: 'cubic-bezier(.9,0,.1,1)', ue: 'cubic-bezier(.9,0,.1,1)' },
+        8: { cover: ['circle(0% at 50% 50%)', 'circle(78% at 50% 50%)'], uncover: ['circle(78% at 50% 50%)', 'circle(0% at 50% 50%)'] }
+      };
+
+      // =========================================================================
+      // WARP OVERLAY ENGINE
+      // =========================================================================
+      const warp = $('#warp');
+      const warpInner = $('#warpInner');
+      const warpNum = $('#warpNum');
+      const warpName = $('#warpName');
+      const warpTag = $('#warpTag');
+      let warpRun = 0;
+
+      async function playWarp(stage, opts) {
+        opts = opts || {};
+        const cfg = ERAS[stage];
+        const t = TRANS[stage];
+        if (!cfg || !t) return;
+
+        if (reduce) {
+          warp.classList.remove('intro');
+          if (opts.onCovered) opts.onCovered();
+          return;
+        }
+
+        const id = ++warpRun;
+        warp.getAnimations().forEach((a) => a.cancel());
+        warpInner.getAnimations().forEach((a) => a.cancel());
+
+        warp.style.background = cfg.bg;
+        warp.style.color = cfg.fg;
+        warpNum.style.fontFamily = cfg.font;
+        warpName.style.fontFamily = cfg.font;
+        warpNum.textContent = String(stage).padStart(2, '0');
+        warpName.textContent = cfg.name;
+        warpTag.textContent = cfg.tag;
+        warp.dataset.scan = cfg.scan ? 'on' : 'off';
+        warp.style.visibility = 'visible';
+
+        try {
+          if (!opts.intro) {
+            const a1 = warp.animate([{ clipPath: t.cover[0] }, { clipPath: t.cover[1] }], {
+              duration: 340, easing: t.ce || 'cubic-bezier(.7,0,.2,1)', fill: 'forwards'
+            });
+            warpInner.animate([
+              { opacity: 0, transform: 'translateY(40px) scale(.94)' },
+              { opacity: 1, transform: 'translateY(0) scale(1)' }
+            ], { duration: 460, delay: 120, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' });
+            await a1.finished;
+            if (id !== warpRun) return;
+            if (opts.onCovered) opts.onCovered();
+            await sleep(260);
+          } else {
+            await sleep(opts.hold || 900);
+            if (id !== warpRun) return;
+            if (opts.onCovered) opts.onCovered();
+            await sleep(150);
+          }
+          if (id !== warpRun) return;
+
+          warpInner.animate([
+            { opacity: 1, transform: 'translateY(0) scale(1)' },
+            { opacity: 0, transform: 'translateY(-30px) scale(1.05)' }
+          ], { duration: 320, fill: 'forwards' });
+          const a2 = warp.animate([{ clipPath: t.uncover[0] }, { clipPath: t.uncover[1] }], {
+            duration: 480, easing: t.ue || 'cubic-bezier(.7,0,.2,1)', fill: 'forwards'
+          });
+          await a2.finished;
+        } catch (e) { /* cancelled by a newer transition */ }
+
+        if (id === warpRun) {
+          warp.getAnimations().forEach((a) => a.cancel());
+          warpInner.getAnimations().forEach((a) => a.cancel());
+          warp.classList.remove('intro');
+          warp.style.visibility = 'hidden';
+        }
+      }
+
+      // =========================================================================
+      // SCROLL PROGRESS, VELOCITY, SCROLL HINT
+      // =========================================================================
+      let lastScrollTop = window.scrollY || 0;
+      let lastScrollTime = performance.now();
+      let scrollVelocity = 0;
+      const progressBar = $('#scrollProgressBar');
+      const velocityLabel = $('#hudScrollVelocity');
+      const scrollHint = $('#scrollHint');
+
+      window.addEventListener('scroll', () => {
+        const now = performance.now();
+        const st = window.scrollY || document.documentElement.scrollTop;
+        const dt = Math.max(16, now - lastScrollTime);
+        scrollVelocity = Math.min(4000, Math.round((Math.abs(st - lastScrollTop) / dt) * 1000));
+        lastScrollTop = st;
+        lastScrollTime = now;
+        if (velocityLabel) velocityLabel.textContent = scrollVelocity + ' px/s';
+        const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        const pct = Math.min(100, Math.max(0, (st / docHeight) * 100));
+        if (progressBar) progressBar.style.width = pct.toFixed(1) + '%';
+        if (scrollHint) scrollHint.style.opacity = st > 80 ? '0' : '1';
+      }, { passive: true });
+
+      setInterval(() => {
+        if (performance.now() - lastScrollTime > 120 && scrollVelocity > 0) {
+          scrollVelocity = Math.max(0, Math.floor(scrollVelocity * 0.7));
+          if (velocityLabel) velocityLabel.textContent = scrollVelocity + ' px/s';
+        }
+      }, 100);
+
+      // =========================================================================
+      // SHAPED DIVIDERS BETWEEN SECTIONS (each era has its own edge)
+      // =========================================================================
+      const EDGES = {
+        2: { t: 'wave', f: '#F8F8F6' },
+        3: { t: 'curve', f: '#12183A' },
+        4: { t: 'zig', f: '#E0E5EC' },
+        5: { t: 'scallop', f: '#FFE600' },
+        6: { t: 'stairs', f: '#00F5D4' },
+        7: { t: 'glitch', f: '#050B07' },
+        8: { t: 'wave', f: '#060411', stroke: '#FF7A00' }
+      };
+
+      function edgeMarkup(type, fill, stroke) {
+        const W = 1440;
+        let d = '';
+        if (type === 'wave') {
+          d = 'M0 0H1440V34C1260 84 1080 6 900 38S540 84 360 40S90 16 0 46Z';
+        } else if (type === 'curve') {
+          d = 'M0 0H1440V12Q720 112 0 12Z';
+        } else if (type === 'zig') {
+          d = 'M0 0H1440V8';
+          const n = 36, s = W / n;
+          for (let i = 0; i < n; i++) { const x = W - i * s; d += 'L' + (x - s / 2).toFixed(1) + ' 64L' + (x - s).toFixed(1) + ' 8'; }
+          d += 'Z';
+        } else if (type === 'scallop') {
+          d = 'M0 0H1440V8';
+          const n = 24, s = W / n;
+          for (let i = 0; i < n; i++) { const x = W - (i + 1) * s; d += 'A' + (s / 2) + ' ' + (s / 2) + ' 0 0 1 ' + x + ' 8'; }
+          d += 'Z';
+        } else if (type === 'stairs') {
+          d = 'M0 0H1440';
+          const n = 24, s = W / n;
+          for (let i = 0; i < n; i++) { const x = W - (i + 1) * s; const y = 14 + ((i * 37) % 5) * 13; d += 'V' + y + 'H' + x; }
+          d += 'Z';
+        } else if (type === 'glitch') {
+          let seed = 7;
+          const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+          let bars = '';
+          for (let i = 0; i < 16; i++) {
+            const w = 60 + rnd() * 260, x = rnd() * (W - w), y = rnd() * 66, h = 4 + rnd() * 10;
+            bars += '<rect x="' + x.toFixed(0) + '" y="' + y.toFixed(0) + '" width="' + w.toFixed(0) + '" height="' + h.toFixed(0) + '" fill="' + (i % 2 ? '#00F5D4' : '#FF007F') + '" opacity=".9"/>';
+          }
+          let g = 'M0 0H1440';
+          const n = 18, s = W / n;
+          for (let i = 0; i < n; i++) { const x = W - (i + 1) * s; g += 'V' + (8 + rnd() * 34).toFixed(0) + 'H' + x.toFixed(0); }
+          g += 'Z';
+          return bars + '<path d="' + g + '" fill="' + fill + '"/>';
+        }
+        return '<path d="' + d + '" fill="' + fill + '"' + (stroke ? ' stroke="' + stroke + '" stroke-width="2" vector-effect="non-scaling-stroke"' : '') + '/>';
+      }
+
+      $$('section[data-stage]').forEach((sec) => {
+        const n = +sec.dataset.stage;
+        const cfg = EDGES[n];
+        if (!cfg) return;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'edge');
+        svg.setAttribute('viewBox', '0 0 1440 80');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.innerHTML = edgeMarkup(cfg.t, cfg.f, cfg.stroke);
+        sec.insertBefore(svg, sec.firstChild);
+      });
+
+      // =========================================================================
+      // SCROLL-REVEAL SYSTEM (each era animates its elements differently)
+      // =========================================================================
+      const EASE_OUT = 'cubic-bezier(.16,1,.3,1)';
+      const RV = {
+        up:    { d: 900,  e: EASE_OUT, kf: [{ opacity: 0, transform: 'translateY(56px)' }, { opacity: 1, transform: 'translateY(0)' }] },
+        blur:  { d: 1000, e: EASE_OUT, kf: [{ opacity: 0, transform: 'scale(.9)', filter: 'blur(18px)' }, { opacity: 1, transform: 'scale(1)', filter: 'blur(0px)' }] },
+        tilt:  { d: 1000, e: EASE_OUT, kf: [{ opacity: 0, transform: 'perspective(900px) translateY(70px) rotateX(24deg)' }, { opacity: 1, transform: 'perspective(900px) translateY(0) rotateX(0deg)' }] },
+        snap:  { d: 520,  e: 'steps(5,end)', kf: [{ opacity: 0, transform: 'translateY(-90px) rotate(-5deg)' }, { opacity: 1, transform: 'translateY(0) rotate(0deg)' }] },
+        pop:   { d: 800,  e: 'cubic-bezier(.34,1.8,.5,1)', kf: [{ opacity: 0, transform: 'scale(.2) rotate(-18deg)' }, { opacity: 1, transform: 'scale(1) rotate(0deg)' }] },
+        stick: { d: 700,  e: 'cubic-bezier(.34,1.8,.5,1)', kf: [{ opacity: 0, scale: '0.1' }, { opacity: 1, scale: '1' }] },
+        wipe:  { d: 900,  e: 'cubic-bezier(.7,0,.2,1)', kf: [{ opacity: 1, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)' }] },
+        slide: { d: 900,  e: EASE_OUT, kf: [{ opacity: 0, transform: 'translateX(80px)' }, { opacity: 1, transform: 'translateX(0)' }] },
+        glitch: {
+          d: 700, e: 'steps(12,end)',
+          kf: [
+            { opacity: 0, transform: 'translateX(-28px) skewX(-8deg)', filter: 'hue-rotate(80deg)' },
+            { opacity: 1, transform: 'translateX(18px) skewX(6deg)', offset: 0.25 },
+            { opacity: 0.3, transform: 'translateX(-8px)', offset: 0.5 },
+            { opacity: 1, transform: 'translateX(4px)', filter: 'hue-rotate(-40deg)', offset: 0.7 },
+            { opacity: 1, transform: 'translateX(0)', filter: 'hue-rotate(0deg)' }
+          ]
+        }
+      };
+
+      function runReveal(el) {
+        const cfg = RV[el.dataset.rv] || RV.up;
+        const delay = (parseFloat(el.dataset.rvI) || 0) * 110;
+        const anim = el.animate(cfg.kf, { duration: cfg.d, delay: delay, easing: cfg.e, fill: 'both' });
+        anim.finished.then(() => { el.classList.remove('rv-pre'); anim.cancel(); }).catch(() => {});
+      }
+
+      let revealsStarted = false;
+      function setupReveals() {
+        if (revealsStarted) return;
+        revealsStarted = true;
+        if (reduce || !('IntersectionObserver' in window)) return;
+        const els = $$('[data-rv]');
+        els.forEach((el) => el.classList.add('rv-pre'));
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((en) => {
+            if (!en.isIntersecting) return;
+            io.unobserve(en.target);
+            runReveal(en.target);
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+        els.forEach((el) => io.observe(el));
+      }
+
+      // =========================================================================
+      // DEPTH + PARALLAX LOOP (sections scale and ghost numbers drift as you scroll)
+      // =========================================================================
+      const stageEls = $$('section[data-stage]').map((s) => ({
+        s: s, inner: $('.stage-inner', s), par: $$('[data-parallax]', s), fade: s.hasAttribute('data-fade')
+      }));
+      let lastY = -1;
+      let dirty = true;
+      window.addEventListener('resize', () => { dirty = true; });
+
+      function depthLoop() {
+        const y = window.scrollY;
+        if (!reduce && (y !== lastY || dirty)) {
+          lastY = y; dirty = false;
+          const vh = window.innerHeight;
+          for (let i = 0; i < stageEls.length; i++) {
+            const o = stageEls[i];
+            const r = o.s.getBoundingClientRect();
+            if (r.bottom < -vh * 0.3 || r.top > vh * 1.3) continue;
+            const c = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+            for (let j = 0; j < o.par.length; j++) {
+              const g = o.par[j];
+              const sp = parseFloat(g.dataset.parallax) || 0;
+              g.style.transform = 'translate3d(0,' + (c * -sp * 220).toFixed(1) + 'px,0)';
+            }
+            if (o.inner) {
+              const k = Math.min(1, Math.max(0, (Math.abs(c) - 0.5) / 0.5));
+              if (k < 0.001) {
+                o.inner.style.transform = '';
+                if (o.fade) o.inner.style.opacity = '';
+              } else {
+                o.inner.style.transform = 'translate3d(0,' + ((c > 0 ? 1 : -1) * k * 40).toFixed(1) + 'px,0) scale(' + (1 - k * 0.08).toFixed(3) + ')';
+                if (o.fade) o.inner.style.opacity = (1 - k * 0.6).toFixed(2);
+              }
+            }
+          }
+        }
+        requestAnimationFrame(depthLoop);
+      }
+      requestAnimationFrame(depthLoop);
+
+      // =========================================================================
+      // STAGE HANDOVER (HUD, nav dots, body color, warp transition)
+      // =========================================================================
+      function readableOn(hex) {
+        const h = hex.replace('#', '');
+        const r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
+        return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#000000' : '#FFFFFF';
+      }
+
+      const navDots = $$('.stage-nav-dot');
+      const hudName = $('#hudCurrentEraName');
+      const hudDot = $('#hudEraDot');
+      let currentStage = 0;
+      let pendingTimer = null;
+      let bootStarted = false;
+
+      function applyStage(n, sec) {
+        const cfg = ERAS[n];
+        const accent = cfg.accent;
+        document.body.dataset.era = String(n);
+        document.body.style.backgroundColor = sec.getAttribute('data-bg') || '#111111';
+        if (hudName) { hudName.textContent = String(n).padStart(2, '0') + '. ' + cfg.name; hudName.style.color = accent; }
+        if (hudDot) hudDot.style.backgroundColor = accent;
+        if (progressBar) progressBar.style.backgroundColor = accent;
+        navDots.forEach((dot) => {
+          const active = dot.getAttribute('data-stage-link') === String(n);
+          dot.style.backgroundColor = active ? accent : 'transparent';
+          dot.style.color = active ? readableOn(accent) : 'rgba(255,255,255,0.65)';
+        });
+        if (scrollHint) scrollHint.style.color = n === 1 ? '#111' : '#fff';
+      }
+
+      function onStageEnter(n) {
+        if (n === 1) setTimeout(triggerSwissReveal, 350);
+        if (n === 6 && !bootStarted) { bootStarted = true; runBootSequence(); }
+      }
+
+      function setStage(n, sec) {
+        if (n === currentStage) return;
+        const first = currentStage === 0;
+        currentStage = n;
+        applyStage(n, sec);
+        if (first) return;
+        clearTimeout(pendingTimer);
+        pendingTimer = setTimeout(() => {
+          if (currentStage !== n) return;
+          playWarp(n);
+          onStageEnter(n);
+        }, 120);
+      }
+
+      if ('IntersectionObserver' in window) {
+        const stageObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) setStage(+entry.target.getAttribute('data-stage'), entry.target);
+          });
+        }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+        $$('section[data-stage]').forEach((s) => stageObserver.observe(s));
+      }
+
+      // =========================================================================
+      // STAGE 1: SWISS WORD-BY-WORD REVEAL & MAGNETIC BUTTON
+      // =========================================================================
+      const swissHeading = $('#swissRevealHeading');
+      const rawWords = swissHeading.textContent.trim().split(/\s+/);
+      swissHeading.innerHTML = rawWords.map((w) => '<span class="swiss-word mr-2">' + w + '</span>').join(' ');
+
+      function triggerSwissReveal() {
+        const wordSpans = swissHeading.querySelectorAll('.swiss-word');
+        wordSpans.forEach((s) => s.classList.remove('revealed'));
+        wordSpans.forEach((s, idx) => { setTimeout(() => s.classList.add('revealed'), idx * 85); });
+      }
+      $('#replaySwissWordsBtn').addEventListener('click', triggerSwissReveal);
+
+      const magArena = $('#magneticArena');
+      const magBtn = $('#magneticBtn');
+      const magCoords = $('#magneticCoords');
+
+      magArena.addEventListener('mousemove', (e) => {
+        const rect = magArena.getBoundingClientRect();
+        const dx = Math.round((e.clientX - (rect.left + rect.width / 2)) * 0.38);
+        const dy = Math.round((e.clientY - (rect.top + rect.height / 2)) * 0.38);
+        magBtn.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+        magCoords.textContent = 'ΔX: ' + dx + 'px | ΔY: ' + dy + 'px';
+      });
+      magArena.addEventListener('mouseleave', () => {
+        magBtn.style.transform = 'translate(0px, 0px)';
+        magCoords.textContent = 'ΔX: 0px | ΔY: 0px';
+      });
+      magBtn.addEventListener('click', (e) => {
+        const lbl = $('#magneticBtnLabel');
+        lbl.textContent = 'LOCKED ●';
+        burst(e.clientX, e.clientY, '#FF3300');
+        showToast('STAGE 01 // SWISS MAGNETIC VECTOR LOCKED');
+        setTimeout(() => { lbl.textContent = 'MAGNETIC'; }, 1200);
+      });
+
+      // =========================================================================
+      // STAGE 2: GLASSMORPHISM 3D TILT, LIGHT GLARE & CURSOR SPOTLIGHT
+      // =========================================================================
+      $$('.tilt-glass-card').forEach((card) => {
+        const glare = $('.glare-layer', card);
+        const readout = $('.tilt-readout', card);
+        card.addEventListener('mousemove', (e) => {
+          const r = card.getBoundingClientRect();
+          const x = e.clientX - r.left;
+          const y = e.clientY - r.top;
+          const rotY = +(((x / r.width) - 0.5) * 22).toFixed(1);
+          const rotX = +(((0.5 - (y / r.height)) * 22)).toFixed(1);
+          card.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) scale(1.02)';
+          if (glare) {
+            glare.style.opacity = '1';
+            glare.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px, rgba(255,255,255,0.32), transparent 65%)';
+          }
+          if (readout) readout.textContent = rotX + '° / ' + rotY + '°';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+          if (glare) glare.style.opacity = '0';
+          if (readout) readout.textContent = '0° / 0°';
+        });
+      });
+
+      $('#glassBlurRange').addEventListener('input', (e) => {
+        const v = e.target.value;
+        $('#glassBlurVal').textContent = v + 'px';
+        $$('.tilt-glass-card').forEach((c) => {
+          c.style.backdropFilter = 'blur(' + v + 'px)';
+          c.style.webkitBackdropFilter = 'blur(' + v + 'px)';
+        });
+      });
+
+      const stage2 = $('#stage-2');
+      const glassSpot = $('#glassSpot');
+      stage2.addEventListener('mousemove', (e) => {
+        const r = stage2.getBoundingClientRect();
+        glassSpot.style.opacity = '1';
+        glassSpot.style.transform = 'translate(' + (e.clientX - r.left) + 'px,' + (e.clientY - r.top) + 'px)';
+      });
+      stage2.addEventListener('mouseleave', () => { glassSpot.style.opacity = '0'; });
+
+      // =========================================================================
+      // STAGE 3: NEUMORPHISM TACTILE DECK
+      // =========================================================================
+      function updateNeuReadout() {
+        const activeBtns = $$('.neu-toggle-btn.pressed').length;
+        const s1 = $('#neuSlider1').value;
+        const s2 = $('#neuSlider2').value;
+        $('#neuSlider1Val').textContent = s1 + '%';
+        $('#neuSlider2Val').textContent = s2 + ' Hz';
+        $('#neuActiveCount').textContent = activeBtns + ' / 4';
+        $('#neuReadoutTitle').textContent = s1 + '% RESONANCE // ' + s2 + ' Hz';
+      }
+      $$('.neu-toggle-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          btn.classList.toggle('pressed');
+          const isPressed = btn.classList.contains('pressed');
+          const led = $('.neu-led', btn);
+          const txt = $('.neu-state-text', btn);
+          if (led) led.className = 'w-3 h-3 rounded-full shadow-sm neu-led ' + (isPressed ? 'bg-[#4F46E5]' : 'bg-slate-400');
+          if (txt) txt.textContent = isPressed ? 'ENGAGED' : 'STANDBY';
+          updateNeuReadout();
+        });
+      });
+      $('#neuSlider1').addEventListener('input', updateNeuReadout);
+      $('#neuSlider2').addEventListener('input', updateNeuReadout);
+
+      // =========================================================================
+      // STAGE 4: BRUTALISM SNAP CARDS & STAMP GENERATOR
+      // =========================================================================
+      let brutalCount = 0;
+      const brutalColors = ['bg-[#00F0FF] text-black', 'bg-[#FF2A85] text-white', 'bg-white text-black', 'bg-[#00F59B] text-black'];
+
+      $$('#brutalGrid .brutal-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          card.classList.toggle('inv');
+          showToast('BRUTAL SLAB POLARITY INVERTED');
+        });
+      });
+
+      $('#brutalStampBtn').addEventListener('click', (e) => {
+        brutalCount++;
+        $('#brutalStampCount').textContent = brutalCount;
+        burst(e.clientX, e.clientY, '#000000');
+        const grid = $('#brutalGrid');
+        const card = document.createElement('div');
+        card.className = 'brutal-card ' + brutalColors[brutalCount % brutalColors.length] + ' p-7 cursor-pointer select-none';
+        card.innerHTML =
+          '<div class="flex justify-between items-center border-b-4 border-black pb-3 mb-4 font-mono-code text-xs font-bold">' +
+          '<span>STAMP #0' + (brutalCount + 3) + '</span><span class="bg-black text-white px-2 py-0.5">RAW NODE</span></div>' +
+          '<h3 class="text-3xl font-black uppercase leading-none">CHAOS BLOCK #' + brutalCount + '</h3>' +
+          '<p class="font-mono-code text-xs mt-4 leading-relaxed">Spawned dynamically with zero border-radius and 8px solid offset shadow. Click to remove.</p>';
+        card.addEventListener('click', () => card.remove());
+        grid.appendChild(card);
+        card.animate([{ transform: 'translateY(-60px) rotate(-6deg)', opacity: 0 }, { transform: 'translateY(0) rotate(0deg)', opacity: 1 }], { duration: 380, easing: 'steps(4,end)' });
+      });
+
+      // =========================================================================
+      // STAGE 5: MAXIMALISM DRAGGABLE STICKERS & VELOCITY MARQUEE
+      // =========================================================================
+      let tickerOffset = 0;
+      let manualBoost = 1;
+      const tickerTrack = $('#maximalTickerTrack');
+      const speedReadout = $('#tickerSpeedReadout');
+
+      function animateMaximalTicker() {
+        const mult = +(1 + (scrollVelocity / 350) + (manualBoost - 1)).toFixed(1);
+        tickerOffset -= 1.2 * mult;
+        const loopW = tickerTrack && tickerTrack.children[0] ? tickerTrack.children[0].offsetWidth + 32 : 1200;
+        if (tickerOffset <= -loopW) tickerOffset += loopW;
+        if (tickerTrack) tickerTrack.style.transform = 'translateX(' + tickerOffset + 'px)';
+        if (speedReadout) speedReadout.textContent = mult.toFixed(1) + 'x';
+        requestAnimationFrame(animateMaximalTicker);
+      }
+      requestAnimationFrame(animateMaximalTicker);
+
+      $('#turboTickerBtn').addEventListener('click', () => {
+        manualBoost = manualBoost >= 4 ? 1 : manualBoost + 1.5;
+        showToast('MAXIMAL TICKER BOOST: ' + manualBoost + 'x');
+      });
+
+      $('#scatterStickersBtn').addEventListener('click', () => {
+        $$('[data-sticker]').forEach((stk) => {
+          stk.style.top = Math.floor(10 + Math.random() * 68) + '%';
+          stk.style.left = Math.floor(6 + Math.random() * 72) + '%';
+          stk.style.right = 'auto';
+          stk.style.bottom = 'auto';
+          stk.style.transform = 'rotate(' + Math.floor(-18 + Math.random() * 36) + 'deg)';
+        });
+        showToast('STICKERS SHUFFLED ACROSS COLLAGE');
+      });
+
+      const playground = $('#stickerPlayground');
+      $$('[data-sticker]').forEach((stk) => {
+        let dragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
+        stk.addEventListener('pointerdown', (e) => {
+          dragging = true;
+          stk.setPointerCapture(e.pointerId);
+          const pRect = playground.getBoundingClientRect();
+          const sRect = stk.getBoundingClientRect();
+          origLeft = sRect.left - pRect.left;
+          origTop = sRect.top - pRect.top;
+          startX = e.clientX; startY = e.clientY;
+          stk.style.left = origLeft + 'px';
+          stk.style.top = origTop + 'px';
+          stk.style.right = 'auto';
+          stk.style.bottom = 'auto';
+        });
+        stk.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          stk.style.left = (origLeft + e.clientX - startX) + 'px';
+          stk.style.top = (origTop + e.clientY - startY) + 'px';
+        });
+        stk.addEventListener('pointerup', () => { dragging = false; });
+        stk.addEventListener('pointercancel', () => { dragging = false; });
+      });
+
+      // =========================================================================
+      // STAGE 6: Y2K TERMINAL CONSOLE
+      // =========================================================================
+      const consoleOut = $('#y2kConsoleOutput');
+      const bootLines = [
+        '>> CYBER-OS ROM BIOS v2.000 (c) 1999-2026',
+        '>> CHECKING MILLENNIUM BUG COMPLIANCE... [OK]',
+        '>> MOUNTING CRT PHOSPHOR DISPLAY... [OK]',
+        '>> TYPE "help" OR CLICK A COMMAND CHIP BELOW.'
+      ];
+
+      function appendTerminalLine(text, isUser) {
+        const div = document.createElement('div');
+        div.className = isUser ? 'text-white font-bold' : 'text-[#00FF66]';
+        div.textContent = text;
+        consoleOut.appendChild(div);
+        consoleOut.scrollTop = consoleOut.scrollHeight;
+      }
+
+      let bootToken = 0;
+      function runBootSequence() {
+        const tok = ++bootToken;
+        consoleOut.innerHTML = '';
+        bootLines.forEach((line, idx) => {
+          setTimeout(() => { if (tok === bootToken) appendTerminalLine(line); }, idx * 320);
+        });
+      }
+
+      function executeY2kCommand(raw) {
+        const cmd = raw.trim().toLowerCase();
+        if (!cmd) return;
+        appendTerminalLine('guest@y2k-node:~# ' + raw, true);
+        if (cmd === 'help') appendTerminalLine('AVAILABLE COMMANDS: help | specs | matrix | y2k | clear');
+        else if (cmd === 'specs') appendTerminalLine('CPU: PENTIUM III 733MHz // RAM: 256MB SDRAM // GPU: VOODOO3 3000 AGP');
+        else if (cmd === 'matrix') appendTerminalLine('01000110 01010101 01010100 01010101 01010010 01000101 // WAKE UP NEO.');
+        else if (cmd === 'y2k') appendTerminalLine('STATUS: CLOCK ROLLOVER SURVIVED. CHROME GRADIENTS AT 100%.');
+        else if (cmd === 'clear') consoleOut.innerHTML = '';
+        else appendTerminalLine('COMMAND EXECUTED: "' + raw + '" -> RETURN CODE 0x00F5');
+      }
+
+      $('#y2kConsoleForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const inp = $('#y2kConsoleInput');
+        executeY2kCommand(inp.value);
+        inp.value = '';
+      });
+      $$('.y2k-cmd-chip').forEach((chip) => {
+        chip.addEventListener('click', () => executeY2kCommand(chip.getAttribute('data-cmd')));
+      });
+      $('#y2kRebootBtn').addEventListener('click', () => {
+        bootStarted = true;
+        runBootSequence();
+        showToast('Y2K BIOS REBOOTING...');
+      });
+
+      // =========================================================================
+      // STAGE 7: CYBERPUNK PARTICLE CANVAS
+      // =========================================================================
+      const canvas = $('#cyberParticleCanvas');
+      const ctx = canvas.getContext('2d');
+      const particles = [];
+      const mouse = { x: -9999, y: -9999 };
+      let cyberVisible = false;
+
+      function resizeCyberCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
+      resizeCyberCanvas();
+      window.addEventListener('resize', resizeCyberCanvas);
+
+      for (let i = 0; i < 60; i++) {
+        particles.push({
+          x: Math.random() * (canvas.width || 1200),
+          y: Math.random() * (canvas.height || 700),
+          vx: (Math.random() - 0.5) * 1.1,
+          vy: (Math.random() - 0.5) * 1.1,
+          color: i % 3 === 0 ? '#FF007F' : '#00F5D4'
+        });
+      }
+
+      const stage7Section = $('#stage-7');
+      stage7Section.addEventListener('mousemove', (e) => {
+        const r = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - r.left;
+        mouse.y = e.clientY - r.top;
+      });
+      stage7Section.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver((es) => { cyberVisible = es[0].isIntersecting; }).observe(stage7Section);
+      } else { cyberVisible = true; }
+
+      function stepCyberParticles() {
+        if (cyberVisible) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+            const dist = Math.hypot(mouse.x - p.x, mouse.y - p.y);
+            if (dist < 160) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = 'rgba(255, 0, 127, 0.45)';
+              ctx.lineWidth = 1.2;
+              ctx.stroke();
+            }
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+
+            for (let j = i + 1; j < particles.length; j++) {
+              const p2 = particles[j];
+              const d = Math.hypot(p.x - p2.x, p.y - p2.y);
+              if (d < 120) {
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = 'rgba(0, 245, 212, ' + ((1 - d / 120) * 0.25) + ')';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+              }
+            }
+          }
+        }
+        requestAnimationFrame(stepCyberParticles);
+      }
+      requestAnimationFrame(stepCyberParticles);
+
+      $('#cyberPulseBtn').addEventListener('click', (e) => {
+        particles.forEach((p) => {
+          p.vx = (Math.random() - 0.5) * 6;
+          p.vy = (Math.random() - 0.5) * 6;
+          setTimeout(() => { p.vx *= 0.25; p.vy *= 0.25; }, 700);
+        });
+        burst(e.clientX, e.clientY, '#FF007F');
+        showToast('NEON SHOCKWAVE EMITTED ACROSS SECTOR 07');
+      });
+
+      // =========================================================================
+      // STAGE 8: ROSETTA MORPHER & ERA VOTING POLL
+      // =========================================================================
+      const MORPH_STYLES = {
+        swiss: {
+          tag: 'SWISS // 1957',
+          card: 'w-full max-w-md transition-all duration-300 p-7 bg-[#F8F8F6] text-[#111111] border border-black/25 font-swiss rounded-none shadow-none',
+          btn: 'px-4 py-2 bg-[#FF3300] text-white text-xs font-mono-code uppercase font-bold'
+        },
+        glass: {
+          tag: 'GLASSMORPHISM // 2020',
+          card: 'w-full max-w-md transition-all duration-300 p-7 glass-card-lite text-white rounded-3xl',
+          btn: 'px-4 py-2 bg-white/20 border border-white/40 rounded-full text-white text-xs font-mono-code font-bold'
+        },
+        neu: {
+          tag: 'NEUMORPHISM // 2019',
+          card: 'w-full max-w-md transition-all duration-300 p-7 neu-raised text-[#3B4454]',
+          btn: 'px-4 py-2 neu-btn text-[#4F46E5] text-xs font-mono-code font-bold'
+        },
+        brutal: {
+          tag: 'NEO-BRUTALISM // RAW',
+          card: 'w-full max-w-md transition-all duration-300 p-7 bg-[#FFE600] text-black brutal-card font-brutal',
+          btn: 'px-4 py-2 bg-[#FF2A85] text-white border-2 border-black shadow-[4px_4px_0px_#000] text-xs font-mono-code font-bold'
+        },
+        maximal: {
+          tag: 'MAXIMALISM // DOPAMINE',
+          card: 'w-full max-w-md transition-all duration-300 p-7 bg-gradient-to-tr from-[#FF2A85] via-[#7928CA] to-[#FFCC00] text-white border-4 border-[#FFCC00] rounded-3xl font-maximal shadow-2xl',
+          btn: 'px-4 py-2 bg-[#00F5D4] text-black rounded-full border-2 border-black text-xs font-mono-code font-bold'
+        },
+        y2k: {
+          tag: 'Y2K TERMINAL // 1999',
+          card: 'w-full max-w-md transition-all duration-300 p-7 bg-[#030704] text-[#00FF66] border-2 border-[#00FF66] font-y2k text-xl',
+          btn: 'px-4 py-1.5 bg-[#00FF66] text-black text-xs font-mono-code font-bold'
+        },
+        cyber: {
+          tag: 'CYBERPUNK // 2088',
+          card: 'w-full max-w-md transition-all duration-300 p-7 bg-[#060411] text-[#00F5D4] cyber-glow-box font-cyber',
+          btn: 'px-4 py-2 bg-[#FF007F] text-white text-xs font-mono-code font-bold shadow-[0_0_12px_#FF007F]'
+        }
+      };
+
+      $$('.morph-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-morph');
+          const cfg = MORPH_STYLES[key];
+          if (!cfg) return;
+          const card = $('#rosettaPreviewCard');
+          card.className = cfg.card;
+          $('#rosettaTag').textContent = cfg.tag;
+          $('#rosettaActionBtn').className = cfg.btn;
+          if (!reduce) {
+            card.animate([
+              { transform: 'scale(.94) rotate(-1.5deg)', filter: 'blur(6px)' },
+              { transform: 'scale(1) rotate(0deg)', filter: 'blur(0px)' }
+            ], { duration: 420, easing: 'cubic-bezier(.16,1,.3,1)' });
+          }
+          $$('.morph-btn').forEach((b) => {
+            const active = b.getAttribute('data-morph') === key;
+            b.className = active
+              ? 'morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-[#FF7A00] text-black font-bold'
+              : 'morph-btn px-3 py-1.5 rounded-lg font-mono-code text-xs bg-white/10 hover:bg-white/20 text-white';
+          });
+        });
+      });
+
+      $('#rosettaActionBtn').addEventListener('click', () => { showToast('ROSETTA COMPONENT ACTION TRIGGERED'); });
+
+      const ERAS_POLL = [
+        { id: 'swiss', name: '01. Swiss', votes: 248, color: '#FF3300' },
+        { id: 'glass', name: '02. Glass', votes: 215, color: '#38BDF8' },
+        { id: 'neu', name: '03. Neumorphic', votes: 142, color: '#818CF8' },
+        { id: 'brutal', name: '04. Brutalism', votes: 264, color: '#FFE600' },
+        { id: 'maximal', name: '05. Maximalism', votes: 179, color: '#FF2A85' },
+        { id: 'y2k', name: '06. Y2K Retro', votes: 198, color: '#00FF66' },
+        { id: 'cyber', name: '07. Cyberpunk', votes: 174, color: '#00F5D4' }
+      ];
+
+      let votedEraId = null;
+      try { votedEraId = localStorage.getItem('odyssey_voted_era'); } catch (e) {}
+
+      function renderVotingPoll() {
+        const grid = $('#votingGrid');
+        if (!grid) return;
+        const total = ERAS_POLL.reduce((acc, item) => acc + item.votes, 0);
+        $('#totalVotesLabel').textContent = total.toLocaleString() + ' TOTAL VOTES CAST';
+        grid.innerHTML = ERAS_POLL.map((era) => {
+          const pct = Math.round((era.votes / total) * 100);
+          const isPicked = votedEraId === era.id;
+          return '<button data-vote-id="' + era.id + '" class="vote-card-btn p-4 rounded-2xl border text-left transition-all flex flex-col justify-between gap-3 cursor-pointer ' +
+            (isPicked ? 'bg-white/15 border-[#00F5D4] scale-[1.02]' : 'bg-white/5 border-white/10 hover:border-white/30') + '">' +
+            '<div><div class="font-mono-code text-[11px] font-bold" style="color:' + era.color + '">' + era.name + '</div>' +
+            '<div class="text-xl font-extrabold mt-1">' + pct + '%</div></div>' +
+            '<div class="w-full space-y-1"><div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">' +
+            '<div class="h-full transition-all duration-300" style="width:' + pct + '%;background-color:' + era.color + '"></div></div>' +
+            '<div class="font-mono-code text-[10px] text-white/60 flex justify-between"><span>' + era.votes + ' votes</span><span>' + (isPicked ? '★ VOTED' : 'VOTE') + '</span></div></div>' +
+            '</button>';
+        }).join('');
+      }
+
+      $('#votingGrid').addEventListener('click', (e) => {
+        const btn = e.target.closest('.vote-card-btn');
+        if (!btn) return;
+        const id = btn.getAttribute('data-vote-id');
+        const found = ERAS_POLL.find((item) => item.id === id);
+        if (!found) return;
+        found.votes += 1;
+        votedEraId = id;
+        try { localStorage.setItem('odyssey_voted_era', id); } catch (err) {}
+        renderVotingPoll();
+        burst(e.clientX, e.clientY, found.color);
+        showToast('VOTE RECORDED FOR ' + found.name.toUpperCase());
+      });
+      renderVotingPoll();
+
+      // =========================================================================
+      // INTRO: cinematic curtain on load, then reveals begin
+      // =========================================================================
+      if (window.scrollY > 200) {
+        warp.classList.remove('intro');
+        warp.style.visibility = 'hidden';
+        setupReveals();
+        triggerSwissReveal();
+      } else {
+        playWarp(1, { intro: true, hold: 900, onCovered: () => { setupReveals(); triggerSwissReveal(); } });
+      }
+    })();
+  </script>
+</body>
+</html>
